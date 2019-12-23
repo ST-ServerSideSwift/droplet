@@ -1,8 +1,11 @@
 Packages
 .build
+*.resolved
 xcuserdata
 *.xcodeproj
 DerivedData/
 .DS_Store
 .swiftpm
 db.sqlite
+.idea/
+
