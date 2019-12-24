@@ -4,7 +4,10 @@ import Fluent
 /// Register your application's routes here.
 public func routes(_ router: Router) throws {
     
-    let dropletController = DropletController()
-    try router.register(collection: dropletController)
+    let dropletsController = DropletsController()
+    let usersController = UsersController()
+    
+    try router.register(collection: dropletsController)
+    try router.register(collection: usersController)
     
 }

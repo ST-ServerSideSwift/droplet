@@ -1,16 +1,19 @@
 import Foundation
 import Vapor
 
-struct DropletController: RouteCollection {
+struct DropletsController: RouteCollection {
     
     func boot(router: Router) throws {
         let dropletRoute = router.grouped("api","droplets")
+        
         dropletRoute.get(use: getAllHandler)
         dropletRoute.get(Droplet.parameter, use: getHandler)
         dropletRoute.post(use: createHandler)
         dropletRoute.put(Droplet.parameter, use: updateHandler)
         dropletRoute.delete(Droplet.parameter, use: deleteHandler)
         dropletRoute.get("sorted", use: sortHandler)
+        
+        dropletRoute.get(Droplet.parameter,"user",use: getUserHandler)
     }
     
     //Get: all
@@ -39,6 +42,7 @@ struct DropletController: RouteCollection {
                     request.parameters.next(Droplet.self),
                     request.content.decode(Droplet.self)) { (droplet, updatedDroplet)  in
                         droplet.name = updatedDroplet.name
+                        droplet.userId = updatedDroplet.userId
                         return droplet.save(on: request)
         }
     }
@@ -53,6 +57,13 @@ struct DropletController: RouteCollection {
         return Droplet.query(on: request)
                    .sort(\.name, ._ascending)
                    .all()
+    }
+    
+    //Get associated User
+    func getUserHandler(_ request: Request) throws -> Future<User> {
+        try request.parameters.next(Droplet.self).flatMap(to: User.self) { droplet in
+            droplet.user.get(on: request)
+        }
     }
     
     
