@@ -1,6 +1,6 @@
 
 import Foundation
-import FluentSQLite
+import FluentPostgreSQL
 import Vapor
 
 final class Droplet: Content {
@@ -13,6 +13,8 @@ final class Droplet: Content {
     }
 }
 
-extension Droplet: SQLiteModel {}
+extension Droplet: PostgreSQLModel {}
 
 extension Droplet: Migration {}
+
+extension Droplet: Parameter {}
