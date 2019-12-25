@@ -1,0 +1,29 @@
+#set("content"){
+
+    <h1>#(user.name)</h1>
+    <h2>#(user.userName)</h2>
+        #if(count(droplets)>0) {
+            <table class="table table=bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>
+                            Droplet
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    #for(droplet in droplets) {
+                        <tr>
+                            <td>
+                                <a href="/droplets/#(droplet.id)">#(droplet.name)</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        } else {
+            <h2>There aren't any droplets yet!</h2>
+        }
+}
+
+#embed("base")

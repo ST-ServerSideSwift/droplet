@@ -13,6 +13,8 @@ struct WebsiteController: RouteCollection {
   func boot(router: Router) throws {
      router.get(use: indexHandler)
      router.get("droplets",Droplet.parameter, use: dropletHandler)
+    router.get("users",User.parameter,use: userHandler)
+      
   }
 
   func indexHandler(_ req: Request) throws -> Future<View> {
@@ -35,6 +37,22 @@ struct WebsiteController: RouteCollection {
             })
     }
     
+    
+    func userHandler(_ req: Request) throws -> Future<View> {
+        return try req.parameters.next(User.self)
+            .flatMap(to: View.self) { user in
+                return try user.droplets.query(on: req).all()
+                    .flatMap(to: View.self) { droplets in
+                        let context = UserContext(title: user.name,
+                                                  user: user,
+                                                  droplets: droplets)
+                        return try req.view().render("user",context)
+                }
+        }
+    }
+
+    
+    
 }
 
 struct IndexContext: Encodable {
@@ -46,4 +64,10 @@ struct DropletContext: Encodable {
     let title: String
     let droplet: Droplet
     let user: User
+}
+
+struct UserContext: Encodable {
+    let title: String
+    let user: User
+    let droplets: [Droplet]
 }

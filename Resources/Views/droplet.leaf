@@ -3,7 +3,7 @@
 #set("content") {
     <h1>#(droplet.name)</h1>
 
-    <p>Created by #(user.name)</p>
+    <p>Created by <a href="/users/#(user.id)">#(user.name)</a></p>
 }
 
 #embed("base")
