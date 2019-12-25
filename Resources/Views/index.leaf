@@ -1,0 +1,31 @@
+
+#set("content") {
+
+    <h1> Droplets </h1>
+
+    #if(droplets) {
+    <table>
+        <thead>
+            <tr>
+                <th>Droplets</th>
+            </tr>
+        </thead>
+        <tbody>
+            #for(droplet in droplets) {
+                <tr>
+                    <td>
+                        <a href="/droplets/#(droplet.id)">
+                         #(droplet.name)
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    } else {
+        <h2>There aren't any Droplets yet!</h2>
+    }
+
+}
+
+#embed("base")

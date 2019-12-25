@@ -31,12 +31,9 @@ struct DropletsController: RouteCollection {
     
     //Post: droplet
     func createHandler(_ request: Request) throws -> Future<Droplet> {
-        try flatMap(to: Droplet.self,
-                    request.parameters.next(Droplet.self),
-                    request.content.decode(Droplet.self)) { (droplet, updatedDroplet)  in
-                        droplet.name = updatedDroplet.name
-                        return droplet.save(on: request)
-        }
+        return try request.content.decode(Droplet.self).flatMap(to: Droplet.self, { droplet in
+            return droplet.save(on: request)
+        })
     }
     
     //Put: Update a droplet

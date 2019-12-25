@@ -1,0 +1,11 @@
+
+
+#set("content") {
+    <h1>#(droplet.name)</h1>
+
+    <p>Created by #(user.name)</p>
+}
+
+#embed("base")
+
+
