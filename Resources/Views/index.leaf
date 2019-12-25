@@ -1,11 +1,12 @@
 
 #set("content") {
 
+    <img src="/images/logo.png" class="mx-auto d-block" alt="Logo" >
     <h1> Droplets </h1>
 
     #if(droplets) {
-    <table>
-        <thead>
+    <table class="table table-bordered table-hover">
+        <thead class="thead-light">
             <tr>
                 <th>Droplets</th>
             </tr>
