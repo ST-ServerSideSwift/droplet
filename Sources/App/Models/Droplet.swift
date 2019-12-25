@@ -16,9 +16,15 @@ final class Droplet: Content {
 }
 
 extension Droplet {
+    
     var user: Parent<Droplet, User> {
         return parent(\.userId)
     }
+    
+    var categories: Siblings<Droplet,Category,DropletCategoryPivot> {
+        return siblings()
+    }
+    
 }
 
 extension Droplet: Migration {

@@ -14,6 +14,7 @@ final class User: Codable {
 }
 
 extension User {
+    
     var droplets: Children<User,Droplet> {
         return children(\.userId)
     }

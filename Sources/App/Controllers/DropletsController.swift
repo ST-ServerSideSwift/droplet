@@ -14,6 +14,9 @@ struct DropletsController: RouteCollection {
         dropletRoute.get("sorted", use: sortHandler)
         
         dropletRoute.get(Droplet.parameter,"user",use: getUserHandler)
+        dropletRoute.post(Droplet.parameter,"categories",Category.parameter, use: addCategoriesHandler)
+        dropletRoute.get(Droplet.parameter,"categories",use: getCategoriesHandler)
+        dropletRoute.delete(Droplet.parameter,"categories",Category.parameter, use: removeCategoriesHandler)
     }
     
     //Get: all
@@ -66,5 +69,29 @@ struct DropletsController: RouteCollection {
         }
     }
     
+    func addCategoriesHandler(_ req: Request) throws -> Future<HTTPStatus> {
+        return try flatMap(to: HTTPStatus.self,
+                           req.parameters.next(Droplet.self),
+                           req.parameters.next(Category.self), { (droplet, category) in
+                            return droplet.categories.attach(category, on: req)
+                                .transform(to: .created)
+        })
+    }
+
+    func getCategoriesHandler(_ req: Request) throws -> Future<[Category]> {
+        return try req.parameters.next(Droplet.self)
+            .flatMap(to: [Category].self){ droplet in
+                try droplet.categories.query(on: req).all()
+            }
+    }
+    
+    func removeCategoriesHandler(_ req: Request) throws -> Future<HTTPStatus> {
+        return try flatMap(to: HTTPStatus.self,
+                                req.parameters.next(Droplet.self),
+                                req.parameters.next(Category.self), { (droplet, category) in
+                                 return droplet.categories.detach(category, on: req)
+                                     .transform(to: .created)
+             })
+    }
     
 }
