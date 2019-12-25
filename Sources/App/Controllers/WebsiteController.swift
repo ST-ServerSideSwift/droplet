@@ -15,6 +15,9 @@ struct WebsiteController: RouteCollection {
      router.get("droplets",Droplet.parameter, use: dropletHandler)
      router.get("users",User.parameter,use: userHandler)
      router.get("users",use: allUsersHandler)
+     router.get("categories", use: allCategoriesHandler)
+     router.get("categories",Category.parameter, use: categoryHandler)
+      
   }
 
   func indexHandler(_ req: Request) throws -> Future<View> {
@@ -58,6 +61,21 @@ struct WebsiteController: RouteCollection {
                 return try req.view().render("allUsers", context)
         }
     }
+    
+    func allCategoriesHandler(_ req: Request) throws -> Future<View> {
+        let categories = Category.query(on: req).all()
+        let context = AllCategoriesContext(categories: categories)
+        return try req.view().render("allCategories", context)
+    }
+    
+    func categoryHandler(_ req: Request) throws -> Future<View> {
+        return try req.parameters.next(Category.self)
+            .flatMap(to: View.self) { category  in
+                let droplets = try category.droplets.query(on: req).all()
+                let context = CategoryContext(title: category.name, category: category, droplets: droplets)
+                return try req.view().render("category",context)
+            }
+    }
 
     
     
@@ -84,3 +102,15 @@ struct AllUsersContext: Encodable {
   let title: String
   let users: [User]
 }
+
+struct AllCategoriesContext: Encodable {
+    let title:String = "All Categories"
+    let categories: Future<[Category]>
+}
+
+struct CategoryContext: Encodable {
+    let title: String
+    let category: Category
+    let droplets: Future<[Droplet]>
+}
+
