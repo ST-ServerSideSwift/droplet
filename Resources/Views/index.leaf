@@ -4,28 +4,7 @@
     <img src="/images/logo.png" class="mx-auto d-block" alt="Logo" >
     <h1> Droplets </h1>
 
-    #if(droplets) {
-    <table class="table table-bordered table-hover">
-        <thead class="thead-light">
-            <tr>
-                <th>Droplets</th>
-            </tr>
-        </thead>
-        <tbody>
-            #for(droplet in droplets) {
-                <tr>
-                    <td>
-                        <a href="/droplets/#(droplet.id)">
-                         #(droplet.name)
-                        </a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    } else {
-        <h2>There aren't any Droplets yet!</h2>
-    }
+    #embed("dropletsTable")
 
 }
 
