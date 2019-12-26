@@ -17,7 +17,14 @@ struct WebsiteController: RouteCollection {
      router.get("users",use: allUsersHandler)
      router.get("categories", use: allCategoriesHandler)
      router.get("categories",Category.parameter, use: categoryHandler)
-      
+    
+     router.get("droplets","create", use: createDropletHandler)
+     router.post(Droplet.self, at: "droplets","create", use: createDropletPostHandler)
+    
+     router.get("droplets",Droplet.parameter,"edit", use: editDropletHandler)
+     router.post("droplets",Droplet.parameter,"edit", use: editDropletPostHandler)
+    
+    router.post("droplets",Droplet.parameter,"delete", use: deleteDropletHandler)
   }
 
   func indexHandler(_ req: Request) throws -> Future<View> {
@@ -76,6 +83,49 @@ struct WebsiteController: RouteCollection {
                 return try req.view().render("category",context)
             }
     }
+    
+    func createDropletHandler(_ req: Request) throws -> Future<View> {
+        let context = CreateDropletContext(users: User.query(on: req).all())
+        return try req.view().render("createDroplet", context)
+    }
+    
+    func createDropletPostHandler(_ req: Request, droplet: Droplet) throws -> Future<Response> {
+        return droplet.save(on: req).map(to: Response.self) { droplet in
+            guard let id = droplet.id else {
+                throw Abort(.internalServerError)
+            }
+            return req.redirect(to: "/droplets/\(id)")
+        }
+    }
+    
+    func editDropletHandler(_ req: Request) throws -> Future<View> {
+        return try req.parameters.next(Droplet.self)
+            .flatMap(to: View.self, { droplet in
+                let context = EditDropletContext(droplet: droplet, users: User.query(on: req).all())
+                //note leaf is same as create
+                return try req.view().render("createDroplet", context)
+            })
+    }
+    
+    func editDropletPostHandler(_ req: Request) throws -> Future<Response> {
+        return try flatMap(to: Response.self,
+                           req.parameters.next(Droplet.self),
+                           req.content.decode(Droplet.self), { droplet, newData in
+                            
+                            droplet.name = newData.name
+                            droplet.userId = newData.userId
+                            
+                            guard let id = droplet.id else {
+                                throw Abort(.internalServerError)
+                            }
+                            let redirect = req.redirect(to: "/droplets/\(id)")
+                            return droplet.save(on: req).transform(to: redirect)
+        })
+    }
+    
+    func deleteDropletHandler(_ req: Request) throws -> Future<Response> {
+        return try req.parameters.next(Droplet.self).delete(on: req).transform(to: req.redirect(to: "/"))
+    }
 
     
     
@@ -112,5 +162,17 @@ struct CategoryContext: Encodable {
     let title: String
     let category: Category
     let droplets: Future<[Droplet]>
+}
+
+struct CreateDropletContext: Encodable {
+    let title = "Create a Droplet"
+    let users: Future<[User]>
+}
+
+struct EditDropletContext: Encodable {
+    let title = "Edit Droplet"
+    let droplet: Droplet
+    let users: Future<[User]>
+    let editing = true
 }
 
