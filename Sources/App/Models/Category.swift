@@ -24,6 +24,20 @@ extension Category {
         return siblings()
     }
     
+    static func addCategory(_ name: String, to droplet: Droplet, on req: Request) throws -> Future<Void> {
+        return Category.query(on: req).filter(\.name == name).first()
+            .flatMap(to: Void.self) { foundCategory in
+                if let existingCategory = foundCategory {
+                    return droplet.categories.attach(existingCategory, on: req).transform(to: ())
+                } else {
+                    let category = Category(name: name)
+                    return category.save(on: req).flatMap(to: Void.self) { savedCategory in
+                        return droplet.categories.attach(savedCategory, on: req).transform(to: ())
+                    }
+                }
+        }
+    }
+    
 }
 
 extension Category: PostgreSQLModel {}
