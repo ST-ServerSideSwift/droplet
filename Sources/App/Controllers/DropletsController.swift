@@ -8,21 +8,21 @@ struct DropletsController: RouteCollection {
         
         let dropletRoute = router.grouped("api","droplets")
         
-        let basicAuthMiddleWare = User.basicAuthMiddleware(using: BCryptDigest())
+        let tokenAuthMiddleWare = User.tokenAuthMiddleware()
         let guardAuthMiddleWare = User.guardAuthMiddleware()
-        let protectedRoute = dropletRoute.grouped(basicAuthMiddleWare,guardAuthMiddleWare)
+        let tokenProtectedRoute = dropletRoute.grouped(tokenAuthMiddleWare,guardAuthMiddleWare)
         
         dropletRoute.get(use: getAllHandler)
         dropletRoute.get(Droplet.parameter, use: getHandler)
-        protectedRoute.post(use: createHandler)
-        dropletRoute.put(Droplet.parameter, use: updateHandler)
-        dropletRoute.delete(Droplet.parameter, use: deleteHandler)
+        tokenProtectedRoute.post(DropletCreateData.self,use: createHandler)
+        tokenProtectedRoute.put(Droplet.parameter, use: updateHandler)
+        tokenProtectedRoute.delete(Droplet.parameter, use: deleteHandler)
         dropletRoute.get("sorted", use: sortHandler)
         
         dropletRoute.get(Droplet.parameter,"user",use: getUserHandler)
-        dropletRoute.post(Droplet.parameter,"categories",Category.parameter, use: addCategoriesHandler)
+        tokenProtectedRoute.post(Droplet.parameter,"categories",Category.parameter, use: addCategoriesHandler)
         dropletRoute.get(Droplet.parameter,"categories",use: getCategoriesHandler)
-        dropletRoute.delete(Droplet.parameter,"categories",Category.parameter, use: removeCategoriesHandler)
+        tokenProtectedRoute.delete(Droplet.parameter,"categories",Category.parameter, use: removeCategoriesHandler)
         
     }
     
@@ -37,19 +37,20 @@ struct DropletsController: RouteCollection {
     }
     
     //Post: droplet
-    func createHandler(_ request: Request) throws -> Future<Droplet> {
-        return try request.content.decode(Droplet.self).flatMap(to: Droplet.self, { droplet in
-            return droplet.save(on: request)
-        })
+    func createHandler(_ request: Request, data: DropletCreateData) throws -> Future<Droplet> {
+        let user = try request.requireAuthenticated(User.self)
+        let droplet = try Droplet(name: data.name, userId: user.requireID())
+        return droplet.save(on: request)
     }
     
     //Put: Update a droplet
     func updateHandler(_ request: Request) throws -> Future<Droplet> {
         try flatMap(to: Droplet.self,
                     request.parameters.next(Droplet.self),
-                    request.content.decode(Droplet.self)) { (droplet, updatedDroplet)  in
+                    request.content.decode(DropletCreateData.self)) { (droplet, updatedDroplet)  in
                         droplet.name = updatedDroplet.name
-                        droplet.userId = updatedDroplet.userId
+                        let user = try request.requireAuthenticated(User.self)
+                        droplet.userId = try user.requireID()
                         return droplet.save(on: request)
         }
     }
@@ -99,4 +100,8 @@ struct DropletsController: RouteCollection {
              })
     }
     
+}
+
+struct DropletCreateData: Content {
+    let name: String
 }

@@ -68,12 +68,38 @@ extension User: BasicAuthenticatable {
     
 }
 
+extension User: TokenAuthenticatable {
+    
+    typealias TokenType = Token
+    
+}
+
 extension Future where T: User {
     
     var Public : Future<User.Public> {
         return self.map(to: User.Public.self) { user in
             return user.Public
         }
+    }
+    
+}
+
+
+struct AdminUser: Migration {
+    
+    typealias Database = PostgreSQLDatabase
+    
+    static func prepare(on conn: PostgreSQLConnection) -> Future<Void> {
+        let password = try? BCrypt.hash("password")
+        guard let hashedPassword = password else {
+            fatalError("Failed to create Admin user")
+        }
+        let user = User(name: "Admin", userName: "admin", password: hashedPassword)
+        return user.save(on: conn).transform(to: ())
+    }
+    
+    static func revert(on conn: PostgreSQLConnection) -> Future<Void> {
+        return .done(on: conn)
     }
     
 }
