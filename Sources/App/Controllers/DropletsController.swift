@@ -1,14 +1,20 @@
 import Foundation
 import Vapor
+import Authentication
 
 struct DropletsController: RouteCollection {
     
     func boot(router: Router) throws {
+        
         let dropletRoute = router.grouped("api","droplets")
+        
+        let basicAuthMiddleWare = User.basicAuthMiddleware(using: BCryptDigest())
+        let guardAuthMiddleWare = User.guardAuthMiddleware()
+        let protectedRoute = dropletRoute.grouped(basicAuthMiddleWare,guardAuthMiddleWare)
         
         dropletRoute.get(use: getAllHandler)
         dropletRoute.get(Droplet.parameter, use: getHandler)
-        dropletRoute.post(use: createHandler)
+        protectedRoute.post(use: createHandler)
         dropletRoute.put(Droplet.parameter, use: updateHandler)
         dropletRoute.delete(Droplet.parameter, use: deleteHandler)
         dropletRoute.get("sorted", use: sortHandler)
@@ -17,6 +23,7 @@ struct DropletsController: RouteCollection {
         dropletRoute.post(Droplet.parameter,"categories",Category.parameter, use: addCategoriesHandler)
         dropletRoute.get(Droplet.parameter,"categories",use: getCategoriesHandler)
         dropletRoute.delete(Droplet.parameter,"categories",Category.parameter, use: removeCategoriesHandler)
+        
     }
     
     //Get: all
@@ -60,9 +67,10 @@ struct DropletsController: RouteCollection {
     }
     
     //Get associated User
-    func getUserHandler(_ request: Request) throws -> Future<User> {
-        try request.parameters.next(Droplet.self).flatMap(to: User.self) { droplet in
-            droplet.user.get(on: request)
+    func getUserHandler(_ request: Request) throws -> Future<User.Public> {
+        try request.parameters.next(Droplet.self)
+            .flatMap(to: User.Public.self) { droplet in
+                droplet.user.get(on: request).Public
         }
     }
     

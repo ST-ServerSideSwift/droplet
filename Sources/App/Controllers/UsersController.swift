@@ -1,6 +1,7 @@
 
 import Foundation
 import Vapor
+import Crypto
 
 struct UsersController: RouteCollection {
     
@@ -14,16 +15,17 @@ struct UsersController: RouteCollection {
     }
     
     
-    func createHandler(_ req: Request, user: User) throws -> Future<User> {
-        return user.save(on: req)
+    func createHandler(_ req: Request, user: User) throws -> Future<User.Public> {
+        user.password = try BCrypt.hash(user.password)
+        return user.save(on: req).Public
     }
     
-    func getAllHandler(_ req: Request) throws -> Future<[User]> {
-        return User.query(on: req).all()
+    func getAllHandler(_ req: Request) throws -> Future<[User.Public]> {
+        return User.query(on: req).decode(data: User.Public.self).all()
     }
     
-    func getHandler(_ req: Request) throws -> Future<User> {
-        return try req.parameters.next(User.self)
+    func getHandler(_ req: Request) throws -> Future<User.Public> {
+        return try req.parameters.next(User.self).Public
     }
     
     func getDropletsHandler(_ req: Request) throws -> Future<[Droplet]> {
