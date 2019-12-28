@@ -74,6 +74,10 @@ extension User: TokenAuthenticatable {
     
 }
 
+extension User: PasswordAuthenticatable {}
+
+extension User: SessionAuthenticatable {}
+
 extension Future where T: User {
     
     var Public : Future<User.Public> {
