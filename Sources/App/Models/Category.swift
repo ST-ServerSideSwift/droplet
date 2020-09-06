@@ -47,3 +47,5 @@ extension Category: Content {}
 extension Category: Migration {}
 
 extension Category: Parameter {}
+
+extension Category: PostgreSQLMigration {}

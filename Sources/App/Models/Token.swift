@@ -22,6 +22,8 @@ extension Token {
     
 }
 
+extension Token: PostgreSQLMigration { }
+
 extension Token: Authentication.Token {
    
     typealias UserType = User

@@ -78,6 +78,8 @@ extension User: PasswordAuthenticatable {}
 
 extension User: SessionAuthenticatable {}
 
+extension User: PostgreSQLMigration {}
+
 extension Future where T: User {
     
     var Public : Future<User.Public> {

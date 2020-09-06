@@ -41,3 +41,5 @@ extension Droplet: Migration {
 extension Droplet: PostgreSQLModel {}
 
 extension Droplet: Parameter {}
+
+extension Droplet: PostgreSQLMigration {}

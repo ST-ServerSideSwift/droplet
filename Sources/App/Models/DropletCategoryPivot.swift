@@ -29,6 +29,8 @@ final class DropletCategoryPivot: PostgreSQLUUIDPivot, ModifiablePivot {
 
 }
 
+extension DropletCategoryPivot: PostgreSQLMigration {}
+
 extension DropletCategoryPivot: Migration {
     
     static func prepare(on connection: PostgreSQLConnection) -> EventLoopFuture<Void> {
